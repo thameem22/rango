@@ -16,7 +16,8 @@ def index(request):
     # that will be passed to the template engine.
 
     category_list = Category.objects.order_by('-likes')[:5]
-    context_dict = {'categories': category_list}
+    page_list = Page.objects.order_by('-views')[:5]
+    context_dict = {'categories': category_list, 'pages': page_list}
     # Render the response and send it back!
     return render(request, 'rango/index.html', context_dict)
 
@@ -101,3 +102,19 @@ def add_page(request, category_name_slug):
                 print(form.errors)
     context_dict = {'form':form, 'category': category}
     return render(request, 'rango/add_page.html', context_dict)
+
+def track_url(request):
+    page_id = None
+    if request.method == 'GET':
+        if 'page_id' in request.GET:
+            page_id = request.GET['page_id']
+    if page_id:
+        try:
+            page = Page.objects.get(id=page_id)
+            page.views = page.views + 1
+            page.save()
+            return redirect(page.url)
+        except:
+            return HttpResponse("Page id {0} not found".format(page_id))
+    print("No page_id in get string")
+    return redirect(reverse('index'))
