@@ -6,6 +6,7 @@
 
 <body>
 {% if category %}
+<h1>New Page</h1>
 <h1>Add a Page to {{category.name}}</h1>
 <form id="page_form" method="post" action="/rango/category/{{ category.slug }}/add_page/">
     {% csrf_token %}
