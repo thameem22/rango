@@ -25,13 +25,14 @@ def index(request):
     category_list = Category.objects.order_by('-likes')[:5]
     page_list = Page.objects.order_by('-views')[:5]
     context_dict = {'categories': category_list, 'pages': page_list}
-    # Render the response and send it back!
-    response= render(request, 'rango/index.html', context_dict)
 
     # Call the helper function to handle the cookies
     visitor_cookie_handler(request)
     context_dict['visits'] = request.session['visits']
     # Return response back to the user, updating any cookies that need changed.
+
+    # Render the response and send it back!
+    response = render(request, 'rango/index.html', context_dict)
     return response
 
     #return HttpResponse("Rango says hey there partner!")
@@ -64,7 +65,7 @@ def visitor_cookie_handler(request):
         request.session['last_visit'] = last_visit_cookie
     # update/set the visits cookie
     request.session['visits'] = visits
-
+    print('request.session=', request.session['visits'])
 
 def about(request):
     if request.session.test_cookie_worked():
@@ -75,7 +76,12 @@ def about(request):
     print(request.method)
     # prints out the user name, if no one is logged in it prints `AnonymousUser`
     print(request.user)
-    return render(request, 'rango/about.html', {})
+
+    # Call the helper function to handle the cookies
+    context_dict = {}
+    visitor_cookie_handler(request)
+    context_dict['visits'] = request.session['visits']
+    return render(request, 'rango/about.html', context_dict)
 
 
 def show_category(request, category_name_slug):
@@ -182,10 +188,10 @@ def register(request):
             user.save()
             profile = profile_form.save(commit=False)
             profile.user = user
+            registered = True
             if 'picture' in request.FILES:
                 profile.picture = request.FILES['picture']
                 profile.save()
-                registered = True
             else:
                 print(user_form.errors, profile_form.errors)
     else:
